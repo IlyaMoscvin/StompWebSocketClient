@@ -66,7 +66,7 @@ namespace syp.biz.SockJS.NET.Client
             }
         }
 
-        public async Task Connect(CancellationToken token)
+        public async Task Connect(CancellationToken token, string userToken)
         {
             this._log.Info(nameof(Connect));
             try
@@ -83,7 +83,7 @@ namespace syp.biz.SockJS.NET.Client
 
                 foreach (var factory in factories)
                 {
-                    selectedTransport = await this.TryTransport(factory, info, token);
+                    selectedTransport = await this.TryTransport(factory, info, token, userToken);
                     if (selectedTransport is null) continue;
                     break;
                 }
@@ -107,7 +107,7 @@ namespace syp.biz.SockJS.NET.Client
             }
         }
 
-        public Task Connect() => this.Connect(CancellationToken.None);
+        public Task Connect() => this.Connect(CancellationToken.None, string.Empty);
 
         public async Task Disconnect()
         {
@@ -135,13 +135,14 @@ namespace syp.biz.SockJS.NET.Client
         private async Task<ITransport?> TryTransport(
             ITransportFactory factory,
             InfoDto info,
-            CancellationToken token)
+            CancellationToken token,
+            string userToken)
         {
             try
             {
                 this._log.Debug($"{nameof(this.TryTransport)}: {factory.Name}");
                 var transport = await factory.Build(new TransportConfiguration(this._config, info));
-                await transport.Connect(token);
+                await transport.Connect(token, userToken);
                 this._log.Info($"{nameof(this.TryTransport)}: {factory.Name} - Success");
                 return transport;
             }

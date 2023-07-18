@@ -12,7 +12,7 @@ namespace DefaultNamespace
 {
     public class Main : MonoBehaviour
     {
-        private const string Token = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiIzZmE4NWY2NC01NzE3LTQ1NjItYjNmYy0yYzk2M2Y2NmFmYTYiLCJleHAiOjE2ODg2NzQwNzN9.DzMvLdClRV2BqeFuSPGALSYv8_IExrak2bJrTNbTPgXKaGBtQSmUdlTw9mQqhWh7fXJMs2YP_g64iVowaucAwA";
+        private const string Token = "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiI4M2E3Nzg5NS02YzBjLTRhNDYtOTQzNy1kOTAzNTZhNTk0YjEiLCJleHAiOjE2OTAyODM1ODZ9.Zsku0M-8dRds5wPK5naLybroaKmsMdwL6FcH0CS4Ut9LPbRUtbJP4AvQ4Dlc4G5hXHkLiC9M-q7--aw6R1mRcg";
         [SerializeField] private Button button;
         private SockJS sockJs;
         public void Start()
@@ -24,7 +24,6 @@ namespace DefaultNamespace
         public async void Connect()
         {
             var config = Configuration.Factory.BuildDefault("http://158.160.71.110:8000/ws-stomp");
-            
 
             sockJs = new SockJS(config);
             sockJs.Connected += async (sender, e) =>
@@ -34,26 +33,27 @@ namespace DefaultNamespace
                 {
                     Debug.Log("Connected...");
                     
-                    await sockJs.Send("/match/round", "",new Dictionary<string, string>());
+                    await sockJs.Send("/matcher/round", "1",new Dictionary<string, string>());
                 }
                 catch (Exception ex)
                 {
                     Debug.Log($"Error: {e}");
                 }
             };
-            sockJs.Message += async (sender, msg) =>
-            {
-                // this event is triggered every time a message is received
-                try
-                {
-                    Debug.Log($"Message: {msg}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error: {ex}");
-                }
-            };
-            await sockJs.Connect();
+            
+            // sockJs.Message += async (sender, msg) =>
+            // {
+            //     // this event is triggered every time a message is received
+            //     try
+            //     {
+            //         Debug.Log($"Message: {msg}");
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         Console.WriteLine($"Error: {ex}");
+            //     }
+            // };
+            await sockJs.Connect(CancellationToken.None, Token);
             Debug.Log("might be connected");
         }
 

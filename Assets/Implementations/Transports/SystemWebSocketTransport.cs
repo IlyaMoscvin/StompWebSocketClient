@@ -83,7 +83,7 @@ namespace syp.biz.SockJS.NET.Client.Implementations.Transports
             var headers = _config.DefaultRequestHeaders;
             return headers.Keys.Cast<string>().ToDictionary(header => header, header => headers[header]);
         }
-        public async Task Connect(CancellationToken token)
+        public async Task Connect(CancellationToken token, string userToken)
         {
             var endpoint = this.BuildEndpoint();
             Debug.Log($"{nameof(this.Connect)}: {endpoint}");
@@ -91,11 +91,9 @@ namespace syp.biz.SockJS.NET.Client.Implementations.Transports
             await this._socket.ConnectAsync(endpoint, token);
             _ = Task.Factory.StartNew(this.ReceiveLoop, this._cts, TaskCreationOptions.LongRunning)
                 .ConfigureAwait(false);
-            string Token =
-                "eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiI4M2E3Nzg5NS02YzBjLTRhNDYtOTQzNy1kOTAzNTZhNTk0YjEiLCJleHAiOjE2ODkzNTM2ODh9.oucBs0LjsVXPtYUUgojpBcYsIWD9taPAeK9PlQmfS7ceDT14zVQJQNN6XNcOdhaz3dNptYEKFQTLa3o8zXTMBw";
             Dictionary<string, string> headers = new()
             {
-                {"Authorization","Bearer " + Token},
+                {"Authorization","Bearer " + userToken},
                 {"accept-version", "1.1,1.0"},
                 {"heart-beat", "10000,10000"}
             };
@@ -108,7 +106,7 @@ namespace syp.biz.SockJS.NET.Client.Implementations.Transports
             await _socket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
-        public Task Connect() => this.Connect(CancellationToken.None);
+        public Task Connect(string userToken) => this.Connect(CancellationToken.None, userToken);
 
         public async Task Disconnect()
         {
