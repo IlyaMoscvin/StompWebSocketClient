@@ -9,7 +9,7 @@ namespace syp.biz.SockJS.NET.Common.Interfaces
         event EventHandler<string> Message;
         event EventHandler Disconnected;
         
-        Task Connect(CancellationToken token);
+        Task Connect(CancellationToken token, string userToken);
         Task Disconnect();
 
         Task Send(string data, CancellationToken token);

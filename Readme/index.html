@@ -1,0 +1,116 @@
+<html>
+<head>
+    <title>Chat WebSocket</title>
+
+    <script src="sockjs-0.3.4.js"></script>
+    <script src="stomp.js"></script>
+
+    <script type="text/javascript">
+
+        var stompClient = null;
+
+        function setConnected(connected) {
+
+            document.getElementById('connect').disabled = connected;
+            document.getElementById('disconnect').disabled = !connected;
+            document.getElementById('conversationDiv').style.visibility = connected ? 'visible' : 'hidden';
+            document.getElementById('response').innerHTML = '';
+        }
+
+        function connect() {
+
+            let socket = new SockJS('http://51.250.105.219:8000/ws-stomp');
+            //let socket = new SockJS('http://158.160.20.239:8000/ws-stomp');
+            //let socket = new SockJS('https://dev-api.arsenalcraft.com/ws-stomp');
+
+            stompClient = Stomp.over(socket);
+
+            //let headers = {token: 'jwtToken'};
+            //let headers = {token: document.getElementById('from').value}
+            //c6edcc14-b8e2-416e-bc72-7e5a0e03743a
+            //let token =
+//eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOiJjNmVkY2MxNC1iOGUyLTQxNmUtYmM3Mi03ZTVhMGUwMzc0M2EiLCJleHAiOjE3NDUyNDU5MDN9.T7UgeiY6NxIPlIslqh4ZyXoBJy60G0_9dTBPCgfXKevw6GKD_7zg1WRnEKkcZ9I9hIVVAlc3GvORBBtsBVkLTA
+            let token = document.getElementById('from').value;
+
+            let headers = {Authorization: 'Bearer ' + token}
+            stompClient.connect(headers, function (frame) {
+
+                setConnected(true);
+                console.log('Connected: ' + frame);
+                //console.log(JSON.parse(JSON.stringify(frame))['headers']['user-name']);
+                //let t = parseJwt(token);
+                let userName = JSON.parse(JSON.stringify(frame))['headers']['user-name'];
+                console.log('userName = ' + userName)
+                stompClient.subscribe('/user/topic/inventory/component/pre-complete', function (messageOutput) {
+                   // console.log('! ' + messageOutput);
+                    // showMessageOutput(JSON.parse(messageOutput.body));
+                    showMessageOutput(messageOutput.body);
+                });
+            });
+        }
+
+        function parseJwt(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function disconnect() {
+
+            if (stompClient != null) {
+                stompClient.disconnect();
+            }
+
+            setConnected(false);
+            console.log("Disconnected");
+        }
+
+        function sendMessage() {
+
+            var from = document.getElementById('from').value;
+            var text = document.getElementById('text').value;
+            //stompClient.send("/app/chat", 'tokenWithMessage', JSON.stringify({'from':from, 'text':text}));
+            //stompClient.send("/app/chat", {}, text);
+            stompClient.send("/app/player/geo", {}, text);
+        }
+
+        function showMessageOutput(messageOutput) {
+
+            var response = document.getElementById('response');
+            var p = document.createElement('p');
+            p.style.wordWrap = 'break-word';
+            //p.appendChild(document.createTextNode(messageOutput.from + ": " + messageOutput.text + " (" + messageOutput.time + ")"));
+            p.appendChild(document.createTextNode(messageOutput));
+            response.appendChild(p);
+        }
+
+    </script>
+
+</head>
+
+<body onload="disconnect()">
+
+<div>
+
+
+    <div>
+        <input type="text" id="from" placeholder="Set a token"/>
+    </div>
+    <br/>
+    <div>
+        <button id="connect" onclick="connect();">Connect</button>
+        <button id="disconnect" disabled="disabled" onclick="disconnect();">Disconnect</button>
+    </div>
+    <br/>
+    <div id="conversationDiv">
+        <input type="text" id="text" placeholder="Write a message..."/>
+        <button id="sendMessage" onclick="sendMessage();">Send</button>
+        <p id="response"></p>
+    </div>
+</div>
+
+</body>
+</html>

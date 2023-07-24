@@ -15,7 +15,7 @@ namespace syp.biz.SockJS.NET.Common.Interfaces
         ConnectionState State { get; }
 
         [SuppressMessage("ReSharper", "UnusedMemberInSuper.Global")]
-        Task Connect(CancellationToken token);
+        Task Connect(CancellationToken token, string userToken);
         Task Connect();
         Task Disconnect();
 
